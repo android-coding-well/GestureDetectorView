@@ -1,8 +1,9 @@
 # GestureDetectorView
 支持8方位的滑动手势检测和缩放手势检测
-![image](https://github.com/huweijian5/YearPicker/blob/master/screenshots/device-2016-09-29-221318.png)
 
-*示例如下：
+![image](https://github.com/huweijian5/GestureDetectorView/blob/master/screenshots/device-2016-11-26-001439.png)
+
+###示例如下：
 ```
 binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListener() {
             /**
@@ -47,7 +48,7 @@ binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListene
         });
   ```      
         
-* 如果需要用到lib_common,做法如下：
+### 如果需要用到lib_common,做法如下：
 * Add it in your root build.gradle at the end of repositories:
 ```
 allprojects {
