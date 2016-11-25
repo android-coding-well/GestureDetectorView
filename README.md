@@ -48,7 +48,7 @@ binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListene
         });
   ```      
         
-### 如果需要用到lib_common,做法如下：
+### 如果需要用到此库,做法如下：
 * Add it in your root build.gradle at the end of repositories:
 ```
 allprojects {
