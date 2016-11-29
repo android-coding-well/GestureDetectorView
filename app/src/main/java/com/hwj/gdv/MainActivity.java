@@ -18,6 +18,10 @@ public class MainActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListener() {
+            /**
+             * @param gesture  手势
+             * @param velocity 缩放手势表示范围，滑动手势表示速率
+             */
             @Override
             public void onGesture( int gesture, float velocity) {
                 switch (gesture) {
