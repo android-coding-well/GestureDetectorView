@@ -20,10 +20,10 @@ public class MainActivity extends AppCompatActivity {
         binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListener() {
             /**
              * @param gesture  手势
-             * @param velocity 缩放手势表示范围，滑动手势表示速率
+             * @param factor 缩放手势表示缩放因子，滑动手势表示速率，旋转手势表示角度
              */
             @Override
-            public void onGesture( int gesture, float velocity) {
+            public void onGesture( int gesture, float factor) {
                 switch (gesture) {
                     case GestureDetectorView.GESTURE_SLIDE_UP:
                         Toast.makeText(MainActivity.this, "up", Toast.LENGTH_SHORT).show();
@@ -50,10 +50,16 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "right_down", Toast.LENGTH_SHORT).show();
                         break;
                     case GestureDetectorView.GESTURE_SCALE_ZOOMIN:
-                        Toast.makeText(MainActivity.this, "zoomin", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "zoomin:"+factor, Toast.LENGTH_SHORT).show();
                         break;
                     case GestureDetectorView.GESTURE_SCALE_ZOOMOUT:
-                        Toast.makeText(MainActivity.this, "zoomout", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "zoomout:"+factor, Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ROTATE_CLOCKWISE:
+                        Toast.makeText(MainActivity.this, "clockwise:"+factor, Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ROTATE_ANTICLOCKWISE:
+                        Toast.makeText(MainActivity.this, "anticlockwise:"+factor, Toast.LENGTH_SHORT).show();
                         break;
                 }
             }

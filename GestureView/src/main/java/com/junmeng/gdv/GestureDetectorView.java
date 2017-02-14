@@ -8,8 +8,10 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import com.junmeng.gdv.detector.RotateGestureDetector;
+
 /**
- * 手势识别器
+ * 手势识别器(支持八方位和缩放旋转手势)
  * Created by HWJ on 2016/11/25.
  */
 
@@ -18,10 +20,10 @@ public class GestureDetectorView extends View {
 
     public interface OnGestureListener {
         /**
-         * @param gesture  手势
-         * @param velocity 缩放手势表示范围，滑动手势表示速率
+         * @param gesture 手势
+         * @param factor  缩放手势表示缩放因子，滑动手势表示速率，旋转手势表示角度
          */
-        void onGesture( int gesture, float velocity);
+        void onGesture(int gesture, float factor);
     }
 
     public static final int GESTURE_SLIDE_UP = 1;
@@ -34,16 +36,13 @@ public class GestureDetectorView extends View {
     public static final int GESTURE_SLIDE_RIGHT_DOWN = 8;
     public static final int GESTURE_SCALE_ZOOMIN = 9;//放大
     public static final int GESTURE_SCALE_ZOOMOUT = 10;
-
-   // @IntDef({GESTURE_SLIDE_UP, GESTURE_SLIDE_DOWN, GESTURE_SLIDE_LEFT, GESTURE_SLIDE_RIGHT, GESTURE_SLIDE_LEFT_UP
-   //         , GESTURE_SLIDE_LEFT_DOWN, GESTURE_SLIDE_RIGHT_UP, GESTURE_SLIDE_RIGHT_DOWN, GESTURE_SCALE_ZOOMIN, GESTURE_SCALE_ZOOMOUT
-   // })
-   // public @interface Gesture {
-   // }
+    public static final int GESTURE_ROTATE_CLOCKWISE = 11;//顺时针
+    public static final int GESTURE_ROTATE_ANTICLOCKWISE = 12;
 
 
     private GestureDetector gestureDetector;//一般手势
     private ScaleGestureDetector scaleGestureDetector;//缩放手势
+    RotateGestureDetector rotateGestureDetector;
     private OnGestureListener onGestureListener;
 
     public GestureDetectorView(Context context) {
@@ -65,6 +64,7 @@ public class GestureDetectorView extends View {
         setClickable(true);
         scaleGestureDetector = new ScaleGestureDetector(context, new MyScaleGestureListener());
         gestureDetector = new GestureDetector(context, new MyGestureListener());
+        rotateGestureDetector = new RotateGestureDetector(context, new MyRotateGestureListener());
     }
 
     /**
@@ -77,48 +77,45 @@ public class GestureDetectorView extends View {
     }
 
 
-    boolean isSingle = true;//是否单指
-    boolean isDown = false;//是否第一次按下
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //Log.i(TAG, "onTouchEvent");
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                //Log.i(TAG, "ACTION_DOWN" + event.getPointerCount());
-                isDown = true;
-                break;
-            case MotionEvent.ACTION_MOVE:
-                //Log.i(TAG, "ACTION_MOVE" + event.getPointerCount());
-                if (isDown && event.getPointerCount() > 1) {//关键判断，如果是多指，则move事件中PointerCount大于1的个数居多
-                    isSingle = false;
-                }
-                isDown = false;
-                break;
-            case MotionEvent.ACTION_UP:
-                // Log.i(TAG, "ACTION_UP" + event.getPointerCount());
-                isSingle = true;
-                isDown = false;
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                //Log.i(TAG, "ACTION_CANCEL" + event.getPointerCount());
-                isSingle = true;
-                isDown = false;
-                break;
+
+        scaleGestureDetector.onTouchEvent(event);
+        rotateGestureDetector.onTouchEvent(event);
+        gestureDetector.onTouchEvent(event);
+        return true;
+    }
+
+    private class MyRotateGestureListener extends RotateGestureDetector.SimpleOnRotateGestureListener {
+
+        @Override
+        public boolean onRotate(RotateGestureDetector detector) {
+            return false;
         }
 
-        if (isSingle) {
-            return gestureDetector.onTouchEvent(event);
-        } else {
-            return scaleGestureDetector.onTouchEvent(event);
+        @Override
+        public boolean onRotateBegin(RotateGestureDetector detector) {
+            return super.onRotateBegin(detector);
         }
 
+        @Override
+        public void onRotateEnd(RotateGestureDetector detector) {
+            float degree = detector.getRotationDegreesDelta();
+            if (degree < -10) {
+                Log.i(TAG, "顺时针旋转:" + (-degree));
+                onGesture(GESTURE_ROTATE_CLOCKWISE, degree);
+            }
+            if (degree > 10) {
+                Log.i(TAG, "逆时针旋转:" + degree);
+                onGesture(GESTURE_ROTATE_ANTICLOCKWISE, degree);
+            }
+
+        }
     }
 
     private class MyScaleGestureListener extends android.view.ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-
             return false;
         }
 
@@ -129,15 +126,11 @@ public class GestureDetectorView extends View {
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
-            float previousSpan = detector.getPreviousSpan();
-            float currentSpan = detector.getCurrentSpan();
-            float dis = Math.abs(previousSpan - currentSpan);
-            if (currentSpan < previousSpan) {
-                Log.i(TAG, "缩小:" + dis);
-                onGesture(GESTURE_SCALE_ZOOMOUT, dis);
-            } else {
-                Log.i(TAG, "放大:" + dis);
-                onGesture(GESTURE_SCALE_ZOOMIN, dis);
+            if (detector.getScaleFactor() < 0.8) {
+                onGesture(GESTURE_SCALE_ZOOMOUT, detector.getScaleFactor());
+            }
+            if (detector.getScaleFactor() > 1.2) {//放大
+                onGesture(GESTURE_SCALE_ZOOMIN, detector.getScaleFactor());
             }
 
         }

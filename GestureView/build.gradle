@@ -26,6 +26,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile "junit:junit:$rootProject.junitVersion"
+    compile "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
 }
 
 
