@@ -42,8 +42,16 @@ public class GestureDetectorView extends View {
 
     private GestureDetector gestureDetector;//一般手势
     private ScaleGestureDetector scaleGestureDetector;//缩放手势
-    RotateGestureDetector rotateGestureDetector;
-    private OnGestureListener onGestureListener;
+    private RotateGestureDetector rotateGestureDetector;//旋转手势
+    private OnGestureListener onGestureListener;//手势监听器
+
+    private boolean isSlideGestureDetecteOn = true;//是否启用滑动手势识别
+    private boolean isScaleGestureDetecteOn = true;//是否启用缩放手势识别
+    private boolean isRotateGestureDetecteOn = true;//是否启用旋转手势识别
+
+    private int minSlideDetecteDistance = 80;//最小滑动距离检测
+    private float minScaleDetecteFactor = 0.2f;//最小缩放因子检测
+    private int minRotateDetecteDegree = 10;//最小旋转角度检测
 
     public GestureDetectorView(Context context) {
         super(context, null, 0);
@@ -67,6 +75,9 @@ public class GestureDetectorView extends View {
         rotateGestureDetector = new RotateGestureDetector(context, new MyRotateGestureListener());
     }
 
+
+//*****************************对外接口start*****************************************
+
     /**
      * 设置手势监听器
      *
@@ -76,14 +87,102 @@ public class GestureDetectorView extends View {
         onGestureListener = listener;
     }
 
+    /**
+     * 是否启用滑动手势识别,默认true
+     *
+     * @param isSlideGestureDetecteOn
+     */
+    public void isSlideGestureDetecteOn(boolean isSlideGestureDetecteOn) {
+        this.isSlideGestureDetecteOn = isSlideGestureDetecteOn;
+    }
+
+    /**
+     * 是否启用缩放手势识别,默认true
+     *
+     * @param isScaleGestureDetecteOn
+     */
+    public void isScaleGestureDetecteOn(boolean isScaleGestureDetecteOn) {
+        this.isScaleGestureDetecteOn = isScaleGestureDetecteOn;
+    }
+
+    /**
+     * 是否启用旋转手势识别,默认true
+     *
+     * @param isRotateGestureDetecteOn
+     */
+    public void isRotateGestureDetecteOn(boolean isRotateGestureDetecteOn) {
+        this.isRotateGestureDetecteOn = isRotateGestureDetecteOn;
+    }
+
+    /**
+     * 设置最小滑动检测距离，默认80
+     * 即超过指定值才会触发识别
+     *
+     * @param minSlideDetecteDistance
+     */
+    public void setMinSlideDetecteDistance(int minSlideDetecteDistance) {
+        this.minSlideDetecteDistance = minSlideDetecteDistance;
+    }
+
+    /**
+     * 设置最小缩放检测因子(0-1之间)，默认0.2
+     * 即超过指定值才会触发识别
+     *
+     * @param minScaleDetecteFactor
+     */
+    public void setMinScaleDetecteFactor(float minScaleDetecteFactor) {
+        this.minScaleDetecteFactor = minScaleDetecteFactor;
+    }
+
+    /**
+     * 设置最小旋转检测角度，默认10
+     * 即超过指定值才会触发识别
+     *
+     * @param minRotateDetecteDegree
+     */
+    public void setMinRotateDetecteDegree(int minRotateDetecteDegree) {
+        this.minRotateDetecteDegree = minRotateDetecteDegree;
+    }
+
+//*****************************对外接口end*******************************************
+
+
+    boolean isSingle = true;//是否单个手指
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
-        scaleGestureDetector.onTouchEvent(event);
-        rotateGestureDetector.onTouchEvent(event);
-        gestureDetector.onTouchEvent(event);
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                isSingle = true;
+                break;
+            case MotionEvent.ACTION_UP:
+                isSingle = true;
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                isSingle = true;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                isSingle = false;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                break;
+        }
+        if (isRotateGestureDetecteOn) {
+            rotateGestureDetector.onTouchEvent(event);
+        }
+        if (isScaleGestureDetecteOn) {
+            scaleGestureDetector.onTouchEvent(event);
+        }
+        if (isSingle && isSlideGestureDetecteOn) {
+            gestureDetector.onTouchEvent(event);
+        }
         return true;
+    }
+
+    private void onGesture(int gesture, float dis) {
+        if (onGestureListener != null) {
+            onGestureListener.onGesture(gesture, dis);
+        }
     }
 
     private class MyRotateGestureListener extends RotateGestureDetector.SimpleOnRotateGestureListener {
@@ -101,11 +200,17 @@ public class GestureDetectorView extends View {
         @Override
         public void onRotateEnd(RotateGestureDetector detector) {
             float degree = detector.getRotationDegreesDelta();
-            if (degree < -10) {
+            if (degree > 180) {
+                degree = degree - 360;
+            }
+            if (degree < -180) {
+                degree = 360 + degree;
+            }
+            if (degree < -minRotateDetecteDegree) {
                 Log.i(TAG, "顺时针旋转:" + (-degree));
                 onGesture(GESTURE_ROTATE_CLOCKWISE, degree);
             }
-            if (degree > 10) {
+            if (degree > minRotateDetecteDegree) {
                 Log.i(TAG, "逆时针旋转:" + degree);
                 onGesture(GESTURE_ROTATE_ANTICLOCKWISE, degree);
             }
@@ -126,19 +231,15 @@ public class GestureDetectorView extends View {
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
-            if (detector.getScaleFactor() < 0.8) {
+            if (detector.getScaleFactor() < (1.0f - minScaleDetecteFactor)) {
+                Log.i(TAG, "缩小:" + detector.getScaleFactor());
                 onGesture(GESTURE_SCALE_ZOOMOUT, detector.getScaleFactor());
             }
-            if (detector.getScaleFactor() > 1.2) {//放大
+            if (detector.getScaleFactor() > (1.0f + minScaleDetecteFactor)) {//放大
+                Log.i(TAG, "放大:" + detector.getScaleFactor());
                 onGesture(GESTURE_SCALE_ZOOMIN, detector.getScaleFactor());
             }
 
-        }
-    }
-
-    private void onGesture(int gesture, float dis) {
-        if (onGestureListener != null) {
-            onGestureListener.onGesture(gesture, dis);
         }
     }
 
@@ -169,6 +270,10 @@ public class GestureDetectorView extends View {
             float distanceX = x2 - x1;
             float distanceY = y2 - y1;
             // Log.i(TAG, "distanceX=" + distanceX + ",distanceY=" + distanceY);
+            int distance = (int) Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+            if (distance < 80) {//小于一定距离则忽略掉
+                return true;
+            }
             if (distanceX > 0) {//向右
                 double y3 = distanceX * Math.tan(22.5 * Math.PI / 180);
                 double y4 = distanceX * Math.tan((45 + 22.5) * Math.PI / 180);
@@ -231,11 +336,11 @@ public class GestureDetectorView extends View {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            if (e.getPointerCount() >= 2) {
-                return false;
+            if (e.getPointerCount() == 1) {
+                return true;//需要返回true 否则onFling不起作用
             }
 
-            return true;//需要返回true 否则onFling不起作用
+            return false;
         }
 
         @Override
