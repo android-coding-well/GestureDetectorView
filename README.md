@@ -24,6 +24,15 @@ binding.gdvGesture.setOnGestureListener(new GestureDetectorView.OnGestureListene
             @Override
             public void onGesture( int gesture, float factor) {
                 switch (gesture) {
+		    case GestureDetectorView.GESTURE_ACTION_UP:
+                        Toast.makeText(MainActivity.this, "action up", Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ACTION_DOWN:
+                        Toast.makeText(MainActivity.this, "action down", Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ACTION_CANCEL:
+                        Toast.makeText(MainActivity.this, "action cancel", Toast.LENGTH_SHORT).show();
+                        break;
                     case GestureDetectorView.GESTURE_SLIDE_UP:
                         Toast.makeText(MainActivity.this, "up", Toast.LENGTH_SHORT).show();
                         break;
