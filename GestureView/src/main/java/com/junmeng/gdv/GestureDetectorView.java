@@ -20,8 +20,10 @@ public class GestureDetectorView extends View {
 
     public interface OnGestureListener {
         /**
-         * @param gesture 手势
-         * @param factor  缩放手势表示缩放因子，滑动手势表示速率，旋转手势表示角度
+         * @param gesture  手势
+         * @param factor   缩放手势表示缩放因子
+         *                  滑动手势表示速率
+         *                  旋转手势表示角度
          */
         void onGesture(int gesture, float factor);
     }
@@ -38,6 +40,9 @@ public class GestureDetectorView extends View {
     public static final int GESTURE_SCALE_ZOOMOUT = 10;
     public static final int GESTURE_ROTATE_CLOCKWISE = 11;//顺时针
     public static final int GESTURE_ROTATE_ANTICLOCKWISE = 12;
+    public static final int GESTURE_ACTION_UP = 13;
+    public static final int GESTURE_ACTION_DOWN = 14;
+    public static final int GESTURE_ACTION_CANCEL = 15;
 
 
     private GestureDetector gestureDetector;//一般手势
@@ -154,6 +159,7 @@ public class GestureDetectorView extends View {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 isSingle = true;
+                onGesture(GESTURE_ACTION_DOWN,0);
                 break;
             case MotionEvent.ACTION_UP:
                 isSingle = true;
@@ -175,6 +181,15 @@ public class GestureDetectorView extends View {
         }
         if (isSingle && isSlideGestureDetecteOn) {
             gestureDetector.onTouchEvent(event);
+        }
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+                onGesture(GESTURE_ACTION_UP,0);
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                onGesture(GESTURE_ACTION_CANCEL,0);
+                break;
         }
         return true;
     }

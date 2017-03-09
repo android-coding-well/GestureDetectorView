@@ -3,13 +3,14 @@ package com.hwj.gdv;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.hwj.gdv.databinding.ActivityMainBinding;
 import com.junmeng.gdv.GestureDetectorView;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = "MainActivity";
     ActivityMainBinding binding;
 
     @Override
@@ -24,7 +25,17 @@ public class MainActivity extends AppCompatActivity {
              */
             @Override
             public void onGesture( int gesture, float factor) {
+                Log.i(TAG, "onGesture: "+gesture+","+factor);
                 switch (gesture) {
+                    case GestureDetectorView.GESTURE_ACTION_UP:
+                        Toast.makeText(MainActivity.this, "action up", Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ACTION_DOWN:
+                        Toast.makeText(MainActivity.this, "action down", Toast.LENGTH_SHORT).show();
+                        break;
+                    case GestureDetectorView.GESTURE_ACTION_CANCEL:
+                        Toast.makeText(MainActivity.this, "action cancel", Toast.LENGTH_SHORT).show();
+                        break;
                     case GestureDetectorView.GESTURE_SLIDE_UP:
                         Toast.makeText(MainActivity.this, "up", Toast.LENGTH_SHORT).show();
                         break;
