@@ -3,7 +3,7 @@
 
 ![image](https://github.com/huweijian5/GestureDetectorView/blob/master/screenshots/device-2016-11-26-001439.png)
 
-###示例如下：
+### 示例如下：
 
 * xml:
 ```
