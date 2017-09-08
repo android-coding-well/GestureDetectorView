@@ -59,7 +59,7 @@ public class GestureDetectorView extends View {
     private int minRotateDetecteDegree = 10;//最小旋转角度检测
 
     public GestureDetectorView(Context context) {
-        super(context, null, 0);
+        this(context, null, 0);
     }
 
     public GestureDetectorView(Context context, AttributeSet attrs) {
